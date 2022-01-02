@@ -1,4 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:8080');
 
 interface ICanvasProps {
     width: number;
@@ -37,13 +40,23 @@ export const Canvas: React.FC<ICanvasProps> = (props: ICanvasProps) => {
         console.log(mouseCoordinates);
     }, [startDrawing, mouseCoordinates, isDrawing]);
 
+    socket.on('ondraw', ({ mouseCoordinates, newMouseCoordinates }) => {
+        drawLine(mouseCoordinates, newMouseCoordinates);
+        setMouseCoordinates(newMouseCoordinates);
+    })
+
     const draw = useCallback(
         (event: MouseEvent) => {
             if (isDrawing) {
-                const newMousePosition = getCoordinates(event);
-                if (mouseCoordinates && newMousePosition) {
-                    drawLine(mouseCoordinates, newMousePosition);
-                    setMouseCoordinates(newMousePosition);
+                const newMouseCoordinates = getCoordinates(event);
+                if (mouseCoordinates && newMouseCoordinates) {
+                    // Delete this
+                    socket.emit('draw', {
+                        mouseCoordinates,
+                        newMouseCoordinates
+                    })
+                    drawLine(mouseCoordinates, newMouseCoordinates);
+                    setMouseCoordinates(newMouseCoordinates);
                 }
             }
         },
@@ -87,7 +100,7 @@ export const Canvas: React.FC<ICanvasProps> = (props: ICanvasProps) => {
         }
     };
 
-    const drawLine = (originalMousePosition: ICoordinate, newMousePosition: ICoordinate) => {
+    const drawLine = (originalMouseCoordinates: ICoordinate, newMouseCoordinates: ICoordinate) => {
         if (canvasRef.current) {
             const canvas: HTMLCanvasElement = canvasRef.current;
             const context = canvas.getContext('2d');
@@ -97,8 +110,8 @@ export const Canvas: React.FC<ICanvasProps> = (props: ICanvasProps) => {
                 context.lineWidth = 2;
 
                 context.beginPath();
-                context.moveTo(originalMousePosition.x, originalMousePosition.y);
-                context.lineTo(newMousePosition.x, newMousePosition.y);
+                context.moveTo(originalMouseCoordinates.x, originalMouseCoordinates.y);
+                context.lineTo(newMouseCoordinates.x, newMouseCoordinates.y);
                 context.closePath();
 
                 context.stroke();
