@@ -1,12 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
+import { Canvas } from './Canvas';
 import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Canvas
+      width={window.innerWidth}
+      height={window.innerHeight}
+    />
   </React.StrictMode>,
   document.getElementById('root')
 );

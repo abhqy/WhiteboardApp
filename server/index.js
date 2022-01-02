@@ -8,7 +8,11 @@ const port = process.env.PORT
 
 app.use(cors());
 
+app.get('/', (req, res) => {
+    res.send('Placeholder.')
+})
+
 app.listen(port, () => {
-    res.send(`Listening to port ${port}...`);
+    console.log(`Listening to port ${port}...`);
 })
 
