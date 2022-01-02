@@ -148,7 +148,19 @@ export const Canvas: React.FC<ICanvasProps> = (props: ICanvasProps) => {
             <button onClick={() => {
                 setPenColor('black');
                 setPenRadius(2);
-            }}>Draw</button>
+            }}>Black</button>
+            <button onClick={() => {
+                setPenColor('red');
+                setPenRadius(2);
+            }}>Red</button>
+            <button onClick={() => {
+                setPenColor('green');
+                setPenRadius(2);
+            }}>Green</button>
+            <button onClick={() => {
+                setPenColor('blue');
+                setPenRadius(2);
+            }}>Blue</button>
             <canvas ref={canvasRef} height={props.height} width={props.width} />
         </div>
     );
