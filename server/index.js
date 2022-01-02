@@ -30,7 +30,9 @@ io.on('connection', (socket) => {
             if (connection.id !== socket.id) {
                 connection.emit('ondraw', {
                     mouseCoordinates: data.mouseCoordinates,
-                    newMouseCoordinates: data.newMouseCoordinates
+                    newMouseCoordinates: data.newMouseCoordinates,
+                    projectedPenColor: data.projectedPenColor,
+                    projectedPenRadius: data.projectedPenRadius
                 });
             }
         })

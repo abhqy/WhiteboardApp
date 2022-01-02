@@ -17,6 +17,10 @@ export const Canvas: React.FC<ICanvasProps> = (props: ICanvasProps) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isDrawing, setIsDrawing] = useState(false);
     const [mouseCoordinates, setMouseCoordinates] = useState<ICoordinate | undefined>(undefined);
+    const [penRadius, setPenRadius] = useState<number>(2);
+    const [penColor, setPenColor] = useState<string>('black');
+    // const [penRadius, setPenRadius] = useState<number>(3);
+    // const [penColor, setPenColor] = useState<string>('black');
 
     const startDrawing = useCallback((event: MouseEvent) => {
         const coordinates = getCoordinates(event);
@@ -40,9 +44,23 @@ export const Canvas: React.FC<ICanvasProps> = (props: ICanvasProps) => {
         console.log(mouseCoordinates);
     }, [startDrawing, mouseCoordinates, isDrawing]);
 
-    socket.on('ondraw', ({ mouseCoordinates, newMouseCoordinates }) => {
-        drawLine(mouseCoordinates, newMouseCoordinates);
-        setMouseCoordinates(newMouseCoordinates);
+    socket.on('ondraw', ({ mouseCoordinates, newMouseCoordinates, projectedPenColor, projectedPenRadius }) => {
+        if (canvasRef.current) {
+            const canvas: HTMLCanvasElement = canvasRef.current;
+            const context = canvas.getContext('2d');
+            if (context) {
+                context.strokeStyle = projectedPenColor;
+                context.lineJoin = 'round';
+                context.lineWidth = projectedPenRadius;
+
+                context.beginPath();
+                context.moveTo(mouseCoordinates.x, mouseCoordinates.y);
+                context.lineTo(newMouseCoordinates.x, newMouseCoordinates.y);
+                context.closePath();
+
+                context.stroke();
+            }
+        }
     })
 
     const draw = useCallback(
@@ -53,14 +71,16 @@ export const Canvas: React.FC<ICanvasProps> = (props: ICanvasProps) => {
                     // Delete this
                     socket.emit('draw', {
                         mouseCoordinates,
-                        newMouseCoordinates
+                        newMouseCoordinates,
+                        projectedPenColor: penColor,
+                        projectedPenRadius: penRadius
                     })
                     drawLine(mouseCoordinates, newMouseCoordinates);
                     setMouseCoordinates(newMouseCoordinates);
                 }
             }
         },
-        [isDrawing, mouseCoordinates]
+        [isDrawing, mouseCoordinates, penColor, penRadius]
     );
 
     useEffect(() => {
@@ -105,9 +125,9 @@ export const Canvas: React.FC<ICanvasProps> = (props: ICanvasProps) => {
             const canvas: HTMLCanvasElement = canvasRef.current;
             const context = canvas.getContext('2d');
             if (context) {
-                context.strokeStyle = 'black';
+                context.strokeStyle = penColor;
                 context.lineJoin = 'round';
-                context.lineWidth = 2;
+                context.lineWidth = penRadius;
 
                 context.beginPath();
                 context.moveTo(originalMouseCoordinates.x, originalMouseCoordinates.y);
@@ -119,5 +139,10 @@ export const Canvas: React.FC<ICanvasProps> = (props: ICanvasProps) => {
         }
     };
 
-    return <canvas ref={canvasRef} height={props.height} width={props.width} />;
+    return (
+        <div>
+            <button></button>
+            <canvas ref={canvasRef} height={props.height} width={props.width} />
+        </div>
+    );
 };
